@@ -1,11 +1,11 @@
 # NodeJS running on a Tessel and other scripts
 
 ---
-## GetATessel
+## Step 1: Get a Tessel
 
     Do stuff here: http://start.tessel.io/
 
-## HowToStartNode
+## StartNode
 
     % npm install servo-pca9685
 
