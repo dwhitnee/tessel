@@ -9,7 +9,7 @@ var port = 8000;
 var tessel = require('tessel');  // the hardware
 var http = require('http');      // the interwebs
 var url = require('url');
-// var $q = require('q');  // promises
+var $q = require('q');  // promises
 
 // var nodestatic = require('node-static');
 // var file = new(nodestatic.Server)("public");
@@ -48,11 +48,12 @@ var Tessel = {
 var Responses = {
   blink: function( response ) {
     Tessel.flash();
-    response.writeHead( 200, {"Content-Type": "text/html"});
+    response.writeHead( 200 );
+
     response.write("<b>Hello, I'm David's <a href=https://tessel.io/>Tessel</a>, what are we going to do tonight?</b>");
   },
   servoStatus: function( response ) {
-    response.writeHead( 200, {"Content-Type": "text/html"});
+    response.writeHead( 200 );
     response.write("<b>Servo is at position " + servo.position + "</b>");
     response.write("<br/>");
     response.write("<a href=/servo/lleft>|&lt;</a>");
@@ -61,7 +62,7 @@ var Responses = {
   },
 
   sorry404: function( response ) {
-    response.writeHead( 404, {"Content-Type": "text/html"});
+    response.writeHead( 404 );
     response.write("<b>Sorry, my weak human masters have not taught me that yet.</b>");
   }  
 };
@@ -70,6 +71,14 @@ var Responses = {
 //  handle all http requests
 //----------------------------------------------------------------------
 var listener = function( request, response ) {
+    response.setHeader('Connection', 'Transfer-Encoding');
+    response.setHeader('Content-Type', 'text/html; charset=utf-8');
+    response.setHeader('Transfer-Encoding', 'chunked');
+
+  // ?
+  // $q.invoke( handleRequest )
+  // .then( finish );
+  
   console.log("Got a request to " + request.url );
 //  console.log( JSON.stringify( request ));
 
