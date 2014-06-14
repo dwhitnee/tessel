@@ -9,7 +9,10 @@ var port = 8000;
 var tessel = require('tessel');  // the hardware
 var http = require('http');      // the interwebs
 var url = require('url');
-var fs = require('fs');
+// var $q = require('q');  // promises
+
+// var nodestatic = require('node-static');
+// var file = new(nodestatic.Server)("public");
 
 var servo = require('./lib/servo')( tessel, 1, 'A' );
 
@@ -52,7 +55,9 @@ var Responses = {
     response.writeHead( 200, {"Content-Type": "text/html"});
     response.write("<b>Servo is at position " + servo.position + "</b>");
     response.write("<br/>");
-    response.write("<a href=/servo/left>Left</a> | <a href=/servo/center>Center</a> | <a href=/servo/right>Right</a>");
+    response.write("<a href=/servo/lleft>|&lt;</a>");
+    response.write(" <a href=/servo/left>Left</a> | <a href=/servo/center>Center</a> | <a href=/servo/right>Right</a> ");
+    response.write("<a href=/servo/rright>&gt;|</a>");
   },
 
   sorry404: function( response ) {
@@ -77,10 +82,15 @@ var listener = function( request, response ) {
     Responses.blink( response );
 
   } else if (request.url.match( /servo/ )) {
+    if (request.url === "/servo/lleft") servo.move(1);
     if (request.url === "/servo/left") servo.left();
     if (request.url === "/servo/right") servo.right();
+    if (request.url === "/servo/rright") servo.move(0);
     if (request.url === "/servo/center") servo.center();
     Responses.servoStatus( response );
+
+  } else if (request.url.match( /ico|html/ )) {
+    // file.serve(request, response);
 
   } else {
     Responses.sorry404( response );
