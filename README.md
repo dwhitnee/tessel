@@ -12,7 +12,7 @@ and other scripts
 
     % tessel run server.js
 
-http://localhost:8000/blink
+ http://localhost:8000/blink
 ---
 
 ###### edit using [markdown format](http://daringfireball.net/projects/markdown/) ######
