@@ -1,4 +1,5 @@
-# NodeJS running on a Tessel and other scripts
+# NodeJS running on a Tessel
+and other scripts
 
 ---
 ## Step 1: Get a Tessel
