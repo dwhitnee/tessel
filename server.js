@@ -60,7 +60,7 @@ var Responses = {
     Tessel.flash();
     Responses.writeHeader( response, 200 );
 
-    response.write('<b>Gee, what are we going to do tonight, <a href="https://tessel.io/">tessel</a>?</b>\n');
+    response.write('<b>Gee, what are we going to do tonight?</b>\n');
     response.write('<div style="padding: 3em">Are you thinking what <a href="servo">I\'m thinking</a>?</div>\n');
   },
   servoStatus: function( response ) {
@@ -85,13 +85,16 @@ var Responses = {
     response.write("<html><head>\n");
     response.write('<link rel="icon" type="image/png" href="http://start.tessel.io/favicon.ico">\n');
     response.write("<title>My Tessel!</title>\n");
-    response.write("<body>\n");
+    response.write('<body style="font-family: sans-serif;">\n');
     response.write('<div style="opacity: .2; z-index: -1; width: 100%; height: 10em; position: absolute; background: url(https://s3.amazonaws.com/technicalmachine-assets/technical-io/tessel-name.png) no-repeat scroll 0 0 / contain"></div>\n');
 
     response.write('<div style="padding: 2em;">');
   },
   writeFooter: function( response ) {
-    response.end("</div></body><html>\n");
+    response.write("</div>");
+    response.write('<code style="font: sans-serif; float: right; padding: 3em;">');
+    response.write('powered by <a href="https://tessel.io/">tessel</a></code>');
+    response.end("</body><html>\n");
   }
 
 
