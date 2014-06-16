@@ -6,15 +6,25 @@
 
 var port = 8000;
 
-var tessel = require('tessel');  // the hardware
 var http = require('http');      // the interwebs
 var url = require('url');
 var $q = require('q');  // promises
 
+// this gives Tessel heartburn
 // var nodestatic = require('node-static');
 // var file = new(nodestatic.Server)("public");
 
-var servo = require('./lib/servo')( tessel, 1, 'A' );
+var servo, tessel;
+
+if (mock) {
+  var dummy = function() {};
+  servo = { move: dummy, right: dummy, left: dummy, center: dummy };
+  tessel = { led: [] }; 
+} else {
+  servo = require('./lib/servo')( tessel, 1, 'A' );
+  tessel = require('tessel');  // the hardware
+}
+
 
 var Tessel = {
   //----------------------------------------
@@ -54,11 +64,13 @@ var Responses = {
   },
   servoStatus: function( response ) {
     response.writeHead( 200 );
+    var output = [];
     response.write("<b>Servo is at position " + servo.position + "</b>");
     response.write("<br/>");
     response.write("<a href=/servo/lleft>|&lt;</a>");
     response.write(" <a href=/servo/left>Left</a> | <a href=/servo/center>Center</a> | <a href=/servo/right>Right</a> ");
     response.write("<a href=/servo/rright>&gt;|</a>");
+    // response.write( output.join("") );
   },
 
   sorry404: function( response ) {
@@ -71,19 +83,17 @@ var Responses = {
 //  handle all http requests
 //----------------------------------------------------------------------
 var listener = function( request, response ) {
-    response.setHeader('Connection', 'Transfer-Encoding');
-    response.setHeader('Content-Type', 'text/html; charset=utf-8');
-    response.setHeader('Transfer-Encoding', 'chunked');
+  response.setHeader('Connection', 'Transfer-Encoding');
+  response.setHeader('Content-Type', 'text/html; charset=utf-8');
+  response.setHeader('Transfer-Encoding', 'chunked');
 
   // ?
   // $q.invoke( handleRequest )
   // .then( finish );
   
   console.log("Got a request to " + request.url );
-//  console.log( JSON.stringify( request ));
 
   var req = url.parse( request.url, true );
-//  console.log( JSON.stringify( req ));  // why doesn't this do params right?
 
   if ((request.url === "/") ||
     (request.url === "/blink"))
@@ -91,9 +101,9 @@ var listener = function( request, response ) {
     Responses.blink( response );
 
   } else if (request.url.match( /servo/ )) {
-    if (request.url === "/servo/lleft") servo.move(1);
-    if (request.url === "/servo/left") servo.left();
-    if (request.url === "/servo/right") servo.right();
+    if (request.url === "/servo/lleft")  servo.move(1);
+    if (request.url === "/servo/left")   servo.left();
+    if (request.url === "/servo/right")  servo.right();
     if (request.url === "/servo/rright") servo.move(0);
     if (request.url === "/servo/center") servo.center();
     Responses.servoStatus( response );
@@ -106,6 +116,7 @@ var listener = function( request, response ) {
   }
 
   response.end("\n");
+  console.log("request end")
 };
 
 //----------------------------------------------------------------------
