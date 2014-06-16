@@ -14,22 +14,22 @@ var $q = require('q');  // promises
 // var nodestatic = require('node-static');
 // var file = new(nodestatic.Server)("public");
 
-var servo, tessel;
+var servo, tessel, mock = false;
 
 if (mock) {
   var dummy = function() {};
   servo = { move: dummy, right: dummy, left: dummy, center: dummy };
   tessel = { led: [] }; 
 } else {
-  servo = require('./lib/servo')( tessel, 1, 'A' );
   tessel = require('tessel');  // the hardware
+  servo = require('./lib/servo')( tessel, 1, 'A' );
 }
 
 
 var Tessel = {
   //----------------------------------------
   allLEDs: function( state ) {
-    for (var i = 0; i< 4; i++) {
+    for (var i = 0; i< tessel.led.length; i++) {
       tessel.led[i].output( state );
     }
   },
@@ -58,25 +58,43 @@ var Tessel = {
 var Responses = {
   blink: function( response ) {
     Tessel.flash();
-    response.writeHead( 200 );
+    Responses.writeHeader( response, 200 );
 
-    response.write("<b>Hello, I'm David's <a href=https://tessel.io/>Tessel</a>, what are we going to do tonight?</b>");
+    response.write('<b>Gee, what are we going to do tonight, <a href="https://tessel.io/">tessel</a>?</b>\n');
+    response.write('<div style="padding: 3em">Are you thinking what <a href="servo">I\'m thinking</a>?</div>\n');
   },
   servoStatus: function( response ) {
-    response.writeHead( 200 );
-    var output = [];
-    response.write("<b>Servo is at position " + servo.position + "</b>");
-    response.write("<br/>");
-    response.write("<a href=/servo/lleft>|&lt;</a>");
-    response.write(" <a href=/servo/left>Left</a> | <a href=/servo/center>Center</a> | <a href=/servo/right>Right</a> ");
-    response.write("<a href=/servo/rright>&gt;|</a>");
-    // response.write( output.join("") );
+    Responses.writeHeader( response, 200 );
+
+    response.write("<b>Servo is at position " + servo.position + "</b>\n");
+    response.write("<br/><br/>\n");
+    response.write("<a href=/servo/lleft>|&lt;</a>\n");
+    response.write(" <a href=/servo/left>Left</a>\n");
+    response.write("| <a href=/servo/center>Center</a> \n");
+    response.write("| <a href=/servo/right>Right</a>\n");
+    response.write(" <a href=/servo/rright>&gt;|</a>\n");
   },
 
   sorry404: function( response ) {
-    response.writeHead( 404 );
+    Responses.writeHeader( response, 404 );
     response.write("<b>Sorry, my weak human masters have not taught me that yet.</b>");
-  }  
+  },
+
+  writeHeader: function( response, status ) {
+    response.writeHead( status );
+    response.write("<html><head>\n");
+    response.write('<link rel="icon" type="image/png" href="http://start.tessel.io/favicon.ico">\n');
+    response.write("<title>My Tessel!</title>\n");
+    response.write("<body>\n");
+    response.write('<div style="opacity: .2; z-index: -1; width: 100%; height: 10em; position: absolute; background: url(https://s3.amazonaws.com/technicalmachine-assets/technical-io/tessel-name.png) no-repeat scroll 0 0 / contain"></div>\n');
+
+    response.write('<div style="padding: 2em;">');
+  },
+  writeFooter: function( response ) {
+    response.end("</div></body><html>\n");
+  }
+
+
 };
 
 //----------------------------------------------------------------------
@@ -115,8 +133,7 @@ var listener = function( request, response ) {
     Responses.sorry404( response );
   }
 
-  response.end("\n");
-  console.log("request end")
+  Responses.writeFooter( response );
 };
 
 //----------------------------------------------------------------------
