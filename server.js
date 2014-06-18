@@ -10,7 +10,7 @@ var http = require('http');      // the interwebs
 var url = require('url');
 var $q = require('q');  // promises
 
-// this gives Tessel heartburn
+// this gives Tessel heartburn, deploy wont even work
 // var nodestatic = require('node-static');
 // var file = new(nodestatic.Server)("public");
 
@@ -84,7 +84,7 @@ var Responses = {
     response.writeHead( status );
     response.write("<html><head>\n");
     response.write('<link rel="icon" type="image/png" href="http://start.tessel.io/favicon.ico">\n');
-    response.write("<title>My Tessel!</title>\n");
+    response.write("<title>David's Tessel</title>\n");
     response.write('<body style="font-family: sans-serif;">\n');
     response.write('<div style="opacity: .2; z-index: -1; width: 100%; height: 10em; position: absolute; background: url(https://s3.amazonaws.com/technicalmachine-assets/technical-io/tessel-name.png) no-repeat scroll 0 0 / contain"></div>\n');
 
@@ -93,7 +93,8 @@ var Responses = {
   writeFooter: function( response ) {
     response.write("</div>");
     response.write('<code style="font: sans-serif; float: right; padding: 3em;">');
-    response.write('powered by <a href="https://tessel.io/">tessel</a></code>');
+    response.write('powered by <a href="https://tessel.io/">tessel</a>');
+    response.write(' (<a href="https://github.com/dwhitnee/tessel">code</a>)</code>');
     response.end("</body><html>\n");
   }
 
