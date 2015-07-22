@@ -16,7 +16,7 @@ var listener = function( request, response ) {
   var start = Date.now();
   response.setHeader('Connection', 'Transfer-Encoding');
   response.setHeader('Content-Type', 'text/html; charset=utf-8');
-  response.setHeader('Transfer-Encoding', 'chunked');
+//  response.setHeader('Transfer-Encoding', 'chunked');
   response.writeHead( 200 );
 
   console.log("Got a request to " + request.url );

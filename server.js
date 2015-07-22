@@ -8,7 +8,7 @@ var port = 8000;
 
 var http = require('http');      // the interwebs
 var url = require('url');
-var $q = require('q');  // promises
+// var $q = require('q');  // promises
 
 // this gives Tessel heartburn, deploy wont even work
 // var nodestatic = require('node-static');
@@ -143,6 +143,9 @@ var listener = function( request, response ) {
 //----------------------------------------------------------------------
 // start the server
 //----------------------------------------------------------------------
+console.log("\nStarting Node Server");
+console.log("Tessel Address: " + require('os').networkInterfaces().en1[0].address);
+
 var server = http.createServer( listener ).listen( port );
 console.log("\nServer running at http://127.0.0.1:" + port);
 console.log("");
