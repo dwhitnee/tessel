@@ -8,22 +8,28 @@ var port = 8000;
 
 var http = require('http');      // the interwebs
 var url = require('url');
+var fs = require('fs');
 // var $q = require('q');  // promises
 
-// this gives Tessel heartburn, deploy wont even work
-// var nodestatic = require('node-static');
-// var file = new(nodestatic.Server)("public");
+var wifi = require("./lib/wifi");
+
+var staticFile = require('node-static');
+//var file = new(staticFile.Server)("./public");
+var fileServer = new staticFile.Server("./public/");
 
 var servo, tessel, mock = false;
 
 if (mock) {
   var dummy = function() {};
   servo = { move: dummy, right: dummy, left: dummy, center: dummy };
-  tessel = { led: [] }; 
+  tessel = { led: [] };
 } else {
   tessel = require('tessel');  // the hardware
   servo = require('./lib/servo')( tessel, 1, 'A' );
 }
+
+// document.getElementById('anchorID').onclick=function(){/*
+
 
 
 var Tessel = {
@@ -58,26 +64,45 @@ var Tessel = {
 var Responses = {
   blink: function( response ) {
     Tessel.flash();
-    Responses.writeHeader( response, 200 );
 
-    response.write('<b>Gee, what are we going to do tonight?</b>\n');
-    response.write('<div style="padding: 3em">Are you thinking what <a href="servo">I\'m thinking</a>?</div>\n');
+    Responses.useFile("index.html", response );
+    // Responses.writeHeader( response, 200 );
+
+    // response.write('<b>Gee, what are we going to do tonight?</b>\n');
+    // response.write('<div style="padding: 3em">Are you thinking what <a href="servo">I\'m thinking</a>?</div>\n');
   },
+
   servoStatus: function( response ) {
-    Responses.writeHeader( response, 200 );
+    Responses.useFile("index.html", response );
 
-    response.write("<b>Servo is at position " + servo.position + "</b>\n");
-    response.write("<br/><br/>\n");
-    response.write("<a href=/servo/lleft>|&lt;</a>\n");
-    response.write(" <a href=/servo/left>Left</a>\n");
-    response.write("| <a href=/servo/center>Center</a> \n");
-    response.write("| <a href=/servo/right>Right</a>\n");
-    response.write(" <a href=/servo/rright>&gt;|</a>\n");
+    // Responses.writeHeader( response, 200 );
+    // response.write("<b>Servo is at position " + servo.position + "</b>\n");
+    // response.write("<br/><br/>\n");
+    // response.write("<a href=/servo/lleft>|&lt;</a>\n");
+    // response.write(" <a href=/servo/left>Left</a>\n");
+    // response.write("| <a href=/servo/center>Center</a> \n");
+    // response.write("| <a href=/servo/right>Right</a>\n");
+    // response.write(" <a href=/servo/rright>&gt;|</a>\n");
   },
+
+  // low budget file server
+  useFile: function( filename, response ) {
+    fs.readFile( "public/" + filename,function( err, data ) {
+      console.log( err );
+      response.writeHead( 200, {
+        'Content-Type': 'text/html',
+        'Content-Length': data.length
+      });
+      response.write( data );
+      response.end();
+    });
+  },
+
 
   sorry404: function( response ) {
     Responses.writeHeader( response, 404 );
     response.write("<b>Sorry, my weak human masters have not taught me that yet.</b>");
+    response.end();
   },
 
   writeHeader: function( response, status ) {
@@ -98,7 +123,6 @@ var Responses = {
     response.end("</body><html>\n");
   }
 
-
 };
 
 //----------------------------------------------------------------------
@@ -112,7 +136,7 @@ var listener = function( request, response ) {
   // ?
   // $q.invoke( handleRequest )
   // .then( finish );
-  
+
   console.log("Got a request to " + request.url );
 
   var req = url.parse( request.url, true );
@@ -128,24 +152,54 @@ var listener = function( request, response ) {
     if (request.url === "/servo/right")  servo.right();
     if (request.url === "/servo/rright") servo.move(0);
     if (request.url === "/servo/center") servo.center();
+
     Responses.servoStatus( response );
 
-  } else if (request.url.match( /ico|html/ )) {
-    // file.serve(request, response);
-
   } else {
-    Responses.sorry404( response );
+    console.log("serving " + request.url );
+    // fileServer.serve(request, response);
+    fileServer.serveFile( request.url, 200, {}, request, response);
+/*
+    fileServer.serve( request, response, function( err, result ) {
+      console.log( err );
+      console.log( result );
+      if (err && (err.status >= 400)) { // If the file wasn't found
+        fileServer.serveFile('/404.html', 404, {}, request, response);
+      }
+    });
+*/
   }
 
-  Responses.writeFooter( response );
+  // Responses.writeFooter( response );
 };
 
 //----------------------------------------------------------------------
 // start the server
 //----------------------------------------------------------------------
 console.log("\nStarting Node Server");
-console.log("Tessel Address: " + require('os').networkInterfaces().en1[0].address);
 
-var server = http.createServer( listener ).listen( port );
-console.log("\nServer running at http://127.0.0.1:" + port);
-console.log("");
+var network = require('os').networkInterfaces();
+
+if (!network.en1) {
+  console.error("No network!  Try 'tessel wifi -n [network name] -p [password]'");
+  wifi.connect();
+} else {
+  console.log("Tessel Address: " + require('os').networkInterfaces().en1[0].address);
+
+  var server = http.createServer( listener ).listen( port );
+  console.log("\nServer running at http://127.0.0.1:" + port);
+  console.log("");
+}
+
+
+setTimeout( function() {
+  servo.move(1);
+}, 2000);
+
+// setTimeout( function() {
+//   servo.move(0);
+// }, 4000);
+
+// setTimeout( function() {
+//   servo.move(1);
+// }, 6000);
